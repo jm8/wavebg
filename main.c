@@ -160,7 +160,10 @@ static void render_frame(struct swaybg_output *output, cairo_surface_t *surface)
 	cairo_restore(cairo);
 
 	// render
-	cairo_set_source_u32(cairo, 0x00ff00ff);
+	int t = time(NULL) % 0xff;
+	int c = t % 2 == 0 ? 0xff0000ff : 0x00ff00ff;
+	cairo_set_source_u32(cairo, c);
+	printf("Rendering\n");
 	cairo_paint(cairo);
 
 	wl_surface_set_buffer_scale(output->surface, output->scale);
@@ -601,32 +604,32 @@ int main(int argc, char **argv) {
 		}
 
 		// Load images, render associated frames, and unload
-		wl_list_for_each(image, &state.images, link) {
-			if (!image->load_required) {
-				continue;
-			}
+		// wl_list_for_each(image, &state.images, link) {
+		// 	if (!image->load_required) {
+		// 		continue;
+		// 	}
 
-			cairo_surface_t *surface = load_background_image(image->path);
-			if (!surface) {
-				swaybg_log(LOG_ERROR, "Failed to load image: %s", image->path);
-				continue;
-			}
+		// 	cairo_surface_t *surface = load_background_image(image->path);
+		// 	if (!surface) {
+		// 		swaybg_log(LOG_ERROR, "Failed to load image: %s", image->path);
+		// 		continue;
+		// 	}
 
-			wl_list_for_each(output, &state.outputs, link) {
-				if (output->dirty && output->config->image == image) {
-					output->dirty = false;
-					render_frame(output, surface);
-				}
-			}
+		// 	wl_list_for_each(output, &state.outputs, link) {
+		// 		if (output->dirty && output->config->image == image) {
+		// 			output->dirty = false;
+		// 			render_frame(output, surface);
+		// 		}
+		// 	}
 
-			image->load_required = false;
-			cairo_surface_destroy(surface);
-		}
+		// 	image->load_required = false;
+		// 	cairo_surface_destroy(surface);
+		// }
 
 		// Redraw outputs without associated image
 		wl_list_for_each(output, &state.outputs, link) {
 			if (output->dirty) {
-				output->dirty = false;
+				// output->dirty = false;
 				render_frame(output, NULL);
 			}
 		}
