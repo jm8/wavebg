@@ -108,44 +108,44 @@ static void render_frame(struct swaybg_output *output, cairo_surface_t *surface)
 
 	// If the last committed buffer has the same size as this one would, do
 	// not render a new buffer, because it will be identical to the old one
-	if (output->committed_width == buffer_width &&
-			output->committed_height == buffer_height) {
-		if (output->committed_scale != output->scale) {
-			wl_surface_set_buffer_scale(output->surface, output->scale);
-			wl_surface_commit(output->surface);
+	// if (output->committed_width == buffer_width &&
+	// 		output->committed_height == buffer_height) {
+	// 	if (output->committed_scale != output->scale) {
+	// 		wl_surface_set_buffer_scale(output->surface, output->scale);
+	// 		wl_surface_commit(output->surface);
 
-			output->committed_scale = output->scale;
-		}
-		return;
-	}
+	// 		output->committed_scale = output->scale;
+	// 	}
+	// 	return;
+	// }
 
-	if (output->config->mode == BACKGROUND_MODE_SOLID_COLOR &&
-			output->state->viewporter &&
-			output->state->single_pixel_buffer_manager) {
-		uint8_t r8 = (output->config->color >> 24) & 0xFF;
-		uint8_t g8 = (output->config->color >> 16) & 0xFF;
-		uint8_t b8 = (output->config->color >> 8) & 0xFF;
-		uint8_t a8 = (output->config->color >> 0) & 0xFF;
-		uint32_t f = 0xFFFFFFFF / 0xFF; // division result is an integer
-		uint32_t r32 = r8 * f;
-		uint32_t g32 = g8 * f;
-		uint32_t b32 = b8 * f;
-		uint32_t a32 = a8 * f;
-		struct wl_buffer *buffer = wp_single_pixel_buffer_manager_v1_create_u32_rgba_buffer(
-			output->state->single_pixel_buffer_manager, r32, g32, b32, a32);
-		wl_surface_attach(output->surface, buffer, 0, 0);
-		wl_surface_damage_buffer(output->surface, 0, 0, INT32_MAX, INT32_MAX);
+	// if (output->config->mode == BACKGROUND_MODE_SOLID_COLOR &&
+	// 		output->state->viewporter &&
+	// 		output->state->single_pixel_buffer_manager) {
+	// 	uint8_t r8 = (output->config->color >> 24) & 0xFF;
+	// 	uint8_t g8 = (output->config->color >> 16) & 0xFF;
+	// 	uint8_t b8 = (output->config->color >> 8) & 0xFF;
+	// 	uint8_t a8 = (output->config->color >> 0) & 0xFF;
+	// 	uint32_t f = 0xFFFFFFFF / 0xFF; // division result is an integer
+	// 	uint32_t r32 = r8 * f;
+	// 	uint32_t g32 = g8 * f;
+	// 	uint32_t b32 = b8 * f;
+	// 	uint32_t a32 = a8 * f;
+	// 	struct wl_buffer *buffer = wp_single_pixel_buffer_manager_v1_create_u32_rgba_buffer(
+	// 		output->state->single_pixel_buffer_manager, r32, g32, b32, a32);
+	// 	wl_surface_attach(output->surface, buffer, 0, 0);
+	// 	wl_surface_damage_buffer(output->surface, 0, 0, INT32_MAX, INT32_MAX);
 
-		struct wp_viewport *viewport = wp_viewporter_get_viewport(
-			output->state->viewporter, output->surface);
-		wp_viewport_set_destination(viewport, output->width, output->height);
+	// 	struct wp_viewport *viewport = wp_viewporter_get_viewport(
+	// 		output->state->viewporter, output->surface);
+	// 	wp_viewport_set_destination(viewport, output->width, output->height);
 
-		wl_surface_commit(output->surface);
+	// 	wl_surface_commit(output->surface);
 
-		wp_viewport_destroy(viewport);
-		wl_buffer_destroy(buffer);
-		return;
-	}
+	// 	wp_viewport_destroy(viewport);
+	// 	wl_buffer_destroy(buffer);
+	// 	return;
+	// }
 
 	struct pool_buffer buffer;
 	if (!create_buffer(&buffer, output->state->shm,
@@ -158,20 +158,10 @@ static void render_frame(struct swaybg_output *output, cairo_surface_t *surface)
 	cairo_set_operator(cairo, CAIRO_OPERATOR_CLEAR);
 	cairo_paint(cairo);
 	cairo_restore(cairo);
-	if (output->config->mode == BACKGROUND_MODE_SOLID_COLOR) {
-		cairo_set_source_u32(cairo, output->config->color);
-		cairo_paint(cairo);
-	} else {
-		if (output->config->color) {
-			cairo_set_source_u32(cairo, output->config->color);
-			cairo_paint(cairo);
-		}
 
-		if (surface) {
-			render_background_image(cairo, surface,
-				output->config->mode, buffer_width, buffer_height);
-		}
-	}
+	// render
+	cairo_set_source_u32(cairo, 0x00ff00ff);
+	cairo_paint(cairo);
 
 	wl_surface_set_buffer_scale(output->surface, output->scale);
 	wl_surface_attach(output->surface, buffer.buffer, 0, 0);

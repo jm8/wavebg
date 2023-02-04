@@ -13,6 +13,7 @@ project(
 
 add_project_arguments(
 	[
+		'-O',
 		'-Wno-unused-parameter',
 		'-Wno-unused-result',
 		'-Wundef',
