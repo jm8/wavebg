@@ -44,16 +44,16 @@ struct swaybg_output {
 	int32_t scale;
 
 	uint32_t configure_serial;
-	bool dirty, needs_ack;
+	bool ready, needs_ack;
 	int32_t committed_width, committed_height, committed_scale;
 
 	struct wl_list link;
 };
 
-static void render_frame(struct swaybg_output *output, cairo_surface_t *surface) {
+static void render_frame(struct swaybg_output *output) {
 	int buffer_width = output->width * output->scale,
 		buffer_height = output->height * output->scale;
-
+	printf("render_frame\n");
 	// If the last committed buffer has the same size as this one would, do
 	// not render a new buffer, because it will be identical to the old one
 	if (output->committed_width == buffer_width &&
@@ -121,7 +121,7 @@ static void layer_surface_configure(void *data,
 	struct swaybg_output *output = data;
 	output->width = width;
 	output->height = height;
-	output->dirty = true;
+	output->ready = true;
 	output->configure_serial = serial;
 	output->needs_ack = true;
 }
@@ -189,9 +189,7 @@ static void output_scale(void *data, struct wl_output *wl_output,
 		int32_t scale) {
 	struct swaybg_output *output = data;
 	output->scale = scale;
-	if (output->state->run_display && output->width > 0 && output->height > 0) {
-		output->dirty = true;
-	}
+	output->ready = (output->state->run_display && output->width > 0 && output->height > 0);
 }
 
 static void output_name(void *data, struct wl_output *wl_output,
@@ -304,7 +302,9 @@ int main(int argc, char **argv) {
 	}
 
 	state.run_display = true;
-	while (wl_display_dispatch(state.display) != -1 && state.run_display) {
+	// while (wl_display_dispatch(state.display) != -1 && state.run_display) {
+	while (wl_display_dispatch(state.display) != -1) {
+		printf("hello?\n");
 		// Send acks, and determine which images need to be loaded
 		struct swaybg_output *output;
 		wl_list_for_each(output, &state.outputs, link) {
@@ -318,9 +318,8 @@ int main(int argc, char **argv) {
 
 		// Redraw outputs without associated image
 		wl_list_for_each(output, &state.outputs, link) {
-			if (output->dirty) {
-				// output->dirty = false;
-				render_frame(output, NULL);
+			if (output->ready) {
+				render_frame(output);
 			}
 		}
 	}
